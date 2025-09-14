@@ -5,6 +5,8 @@ __pycache__/
 *.pyd
 *.log
 *.sqlite3
+
+# Virtual env / tooling
 .venv/
 venv/
 .env
@@ -12,6 +14,7 @@ venv/
 .playwright/
 artifacts/
 
+# IDE / OS
 .idea/
 .vscode/
 .DS_Store
