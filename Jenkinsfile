@@ -12,14 +12,9 @@ pipeline {
     OUT_DIR = "artifacts/${BUILD_NUMBER}"
   }
 
-  stages {
-    stage('Checkout') {
+  stages('Checkout') {
       steps {
-        // SSH URL (recommended). If private, set credentialsId to your Jenkins SSH key ID.
-        // Replace <YOUR-USER> with your GitHub username.
-        git branch: 'main',
-            url: 'git@github.com:<YOUR-USER>/ui_playwright.git',
-            credentialsId: 'github-ssh'  // remove this line if your repo is public
+        checkout scm
       }
     }
 
@@ -30,7 +25,7 @@ pipeline {
           . venv/bin/activate
           pip install -U pip
           pip install -r requirements.txt
-          python -m playwright install --with-deps
+          python -m playwright install
           mkdir -p "${OUT_DIR}"
         '''
       }
