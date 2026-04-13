@@ -20,3 +20,14 @@ class BookStorePage(BasePage):
         self.navigate_to(self.path)
         expect(self.page).to_have_url(re.compile(f"*.{self.path}$"))
         expect(self.page.locator(".book-wrapper")).to_be_visible()
+
+
+    def get_book_count(self, page: Page):
+        rows = page.locator("tr")
+        count = rows.count()
+
+
+        for i in range(count):
+            row = rows.nth(i)
+            title = row.locator("a")
+            expect(title).to_be_visible()

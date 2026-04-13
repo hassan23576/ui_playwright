@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import uuid
+from logging import raiseExceptions
 from pathlib import Path
 
 import requests
@@ -160,7 +161,6 @@ class BookStoreApi:
             "origins": []
         }
 
-
         auth_dir.mkdir(parents=True, exist_ok=True)
         logger.debug(f"Ensured directory exists: {auth_dir}")
 
@@ -177,8 +177,7 @@ class BookStoreApi:
 
         return auth_path
 
-
-    def add_books(self, user_id, token, isbns):
+    def add_books(self, user_id, token, isbns, raise_on_failure=True):
         logger.info("Adding books to collection")
         url = f"{self.base_url}{self.endpoints['add_books']}"
 
@@ -186,20 +185,26 @@ class BookStoreApi:
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json"
         }
+
         payload = {
             "userId": user_id,
             "collectionOfIsbns": [
                 {"isbn": isbn} for isbn in isbns
             ]
         }
+
         response = requests.post(url, json=payload, headers=headers)
 
-        if response.status_code not in [201, 200]:
-            logger.error(f"Failed to add books: {response.status_code} - {response.text}")
-            raise Exception("Add books failed")
+        if response.status_code not in [200, 201]:
+            if raise_on_failure:
+                logger.error(f"Failed to add books: {response.status_code} - {response.text}")
+                raise Exception("Add books failed")
+            else:
+                logger.info(f"Expected failure adding books: {response.status_code} - {response.text}")
+                return response
 
         logger.info("Books added successfully")
-        return response.json()
+        return response
 
     def delete_all_books(self, user_id, token):
         logger.info("Deleting all books from collection")
@@ -224,6 +229,56 @@ class BookStoreApi:
         logger.info("Books deleted from collection successfully")
 
 
+    def get_user_books_map(self, user_id, token):
+        logger.info("Get all books title from collection")
+
+        url = f"{self.base_url}{self.endpoints['get_profile_books']}"
+
+        params = {
+            "UserId": user_id
+        }
+
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+
+        response = requests.get(url, params=params, headers=headers)
+
+        if response.status_code not in [200, 304]:
+            logger.error(f"Failed to get book collections: {response.status_code} - {response.text}")
+            raise Exception("Get Books Collection failed")
+
+        api_data = response.json()
+        books = api_data.get("books", [])
+
+        isbn_title_map = {
+            book["isbn"]: book["title"]
+            for book in books
+        }
+
+        logger.info("Book Collection received")
+        return isbn_title_map
 
 
+    def delete_account(self, user_id, token):
+        logger.info("Deleting Account")
+
+        endpoint = self.endpoints['delete_account']
+        endpoint_with_id = endpoint.replace("{userId}", user_id)
+
+        url = f"{self.base_url}{endpoint_with_id}"
+
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json"
+        }
+
+        response = requests.delete(url, headers=headers)
+
+        if response.status_code != 204:
+            logger.error(f"Failed to delete user: {response.status_code} - {response.text}")
+            raise Exception("Failed deleting user")
+
+        logger.info("Deleted user successfully!")
+        return response
 

@@ -6,6 +6,8 @@
     "create_user": "/Account/v1/User",
     "generate_token": "/Account/v1/GenerateToken",
     "add_books": "/BookStore/v1/Books",
-    "delete_books": "/BookStore/v1/Books"
+    "delete_books": "/BookStore/v1/Books",
+    "get_profile_books": "/BookStore/v1/Books",
+    "delete_account": "/Account/v1/User/{userId}"
   }
 }
