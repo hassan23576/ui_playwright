@@ -5,9 +5,10 @@ __pycache__/
 .pytest_cache/
 .venv/
 venv/
+.idea/
 
 # Playwright Authentication & State
-playwright/.auth/
+framework_playwright/playwright/.auth/
 storage_state.json
 state.json
 
